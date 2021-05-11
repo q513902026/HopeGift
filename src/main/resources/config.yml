@@ -1,0 +1,7 @@
+version: 1
+prefix: "&d[CDK]&c"
+log: true
+enableGifts:
+  - TEST_1
+  - TEST_2
+lastUpdateCDK: 0000-00-00

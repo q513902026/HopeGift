@@ -1,0 +1,19 @@
+name: HopeGift
+main: me.hope.HopeGift
+version: 0.0.1
+authors:
+  - HopeAsd
+description: Hope's Gift Code Plugin
+depend:
+  - HopeCore
+
+commands:
+  cdk:
+    usage: "/<command> [code]"
+    permission: "hopegift.use"
+  hopegift:
+    aliases:
+      - hgift
+      - gift
+    usage: "/<command> [subcommand]"
+    permission: "hopegift.admin"

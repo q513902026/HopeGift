@@ -1,0 +1,12 @@
+gift:
+  TEST_1:
+    type: REPEAT
+    result: COMMANDS
+    USER_LIST: []
+    value:
+      - gamemode 1 %PLAYER%
+  TEST_2:
+    type: UNIQUE
+    result: COMMANDS
+    value:
+      - gamemode 0 %PLAYER%
