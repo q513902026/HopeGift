@@ -262,6 +262,7 @@ public class Config {
                 pluginLogger.sendConsoleMessage("激活码类型["+giftTypeName+"]导出开始");
                 for (String cdk : cdks) {
                     pw.println(cdk);
+                    pluginLogger.sendConsoleMessage("导出激活码 "+cdk);
                 }
                 pw.close();
                 fw.close();
