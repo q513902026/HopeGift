@@ -108,7 +108,7 @@ public class Config {
         pluginLogger.sendConsoleMessage("激活码总量:" + keyMap.size());
         for (Map.Entry<String, Object> entry : keyMap.entrySet()) {
             if (entry.getValue() instanceof Boolean) {
-                registerCDK(key, entry.getKey(), ((Boolean) entry.getValue()).booleanValue());
+                registerCDK(key, entry.getKey(), (Boolean) entry.getValue());
             }
         }
     }
@@ -118,7 +118,6 @@ public class Config {
      * @param cdk 激活码
      * @param player 执行的玩家
      * @return 当返回true时 代表激活码激活成功
-     * @throws GiftNotFoundException 当激活码类型无法被找到或未激活时
      */
     public boolean activeCDK(final String cdk, Player player){
         String giftTypeKey = allCDKMap.get(cdk);
@@ -206,52 +205,73 @@ public class Config {
     /**
      * 从文件中载入CDK
      *
-     * @param giftTypename 激活码类别
+     * @param giftTypeName 激活码类别
      * @param name 文件名称
      */
-    public synchronized void loadCDKFromFile(final String giftTypename, String name) {
-        //TODO 从txt文件种读取CDK 根据文件名称来判断激活码种类
+    public synchronized void loadCDKFromFile(final String giftTypeName, String name) {
+
         File importFile = plugin.getCustomDataFile("import/"+name+".txt");
         List<String> cdks = Collections.synchronizedList(new ArrayList<>());
             try {
                 BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(importFile), Charset.defaultCharset()));
                 String lineText;
                 while((lineText = br.readLine()) != null){
-                    cdks.add(lineText);
+                    synchronized (cdks){
+                        cdks.add(lineText);
+                    }
                 }
                 new BukkitRunnable() {
 
                     @Override
                     public void run() {
-                        ConfigurationSection cdkData = pluginConfigs.getConfig("cdk").getConfigurationSection(giftTypename);
+                        ConfigurationSection cdkData = pluginConfigs.getConfig("cdk").getConfigurationSection(giftTypeName);
                         CDKCommand.fileExportOrImport = true;
-                        pluginLogger.sendConsoleMessage("激活码类型["+giftTypename+"]导入开始");
+                        pluginLogger.sendConsoleMessage("激活码类型["+giftTypeName+"]导入开始");
                         for(String cdk : cdks){
                             cdkData.set(cdk,false);
                             pluginLogger.sendConsoleMessage("导入激活码 "+cdk);
                         }
-                        pluginLogger.sendConsoleMessage("激活码类型["+giftTypename+"]导入完成");
+                        pluginLogger.sendConsoleMessage("激活码类型["+giftTypeName+"]导入完成");
                         pluginConfigs.saveConfig("cdk");
                         init();
                         CDKCommand.fileExportOrImport = false;
                     }
                 }.runTask(plugin);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        pluginLogger.sendConsoleMessage("loadCDKFromFile "+ giftTypename+ " " + name);
+        pluginLogger.sendConsoleMessage("loadCDKFromFile "+ giftTypeName+ " " + name);
     }
 
     /**
      * 把CDK输出到文件中
      *
-     * @param name 输出的CDK激活码类型名称
+     * @param fileName 输出的CDK激活码类型名称
      */
-    public void saveCDKToFile(String name) {
-        //TODO 根据name的名称获取其激活码 然后保存到 {name}.txt 文件中
-        pluginLogger.sendConsoleMessage("saveCDKToFile " + name);
+    public synchronized void saveCDKToFile(String giftTypeName,String fileName) {
+        File exportFile = plugin.getCustomDataFile("export/"+fileName+".txt");
+        CDKCommand.fileExportOrImport = true;
+        Set<String> cdks = Collections.synchronizedSet(pluginConfigs.getConfig("cdk").getConfigurationSection(giftTypeName).getKeys(false));
+        CDKCommand.fileExportOrImport = false;
+        FileWriter fw;
+        PrintWriter pw;
+        try{
+            fw = new FileWriter(exportFile,false);
+            pw = new PrintWriter(fw);
+            synchronized (cdks){
+                pluginLogger.sendConsoleMessage("激活码类型["+giftTypeName+"]导出开始");
+                for (String cdk : cdks) {
+                    pw.println(cdk);
+                }
+                pw.close();
+                fw.close();
+                pluginLogger.sendConsoleMessage("激活码类型["+giftTypeName+"]导出结束");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        pluginLogger.sendConsoleMessage("saveCDKToFile " + fileName);
     }
 
     public String getPrefix() {
