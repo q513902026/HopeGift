@@ -2,6 +2,7 @@ package me.hope;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import me.hope.commands.CDKCommand;
 import me.hope.core.Gift;
 import me.hope.core.PluginConfig;
 import me.hope.core.PluginLogger;
@@ -13,10 +14,11 @@ import me.hope.exception.CDKNotFoundException;
 import me.hope.exception.GiftNotFoundException;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.io.*;
+import java.nio.charset.Charset;
+import java.util.*;
 
 /**
  * 对配置文件进行处理
@@ -29,6 +31,8 @@ public class Config {
     private static PluginConfig<HopeGift> pluginConfigs;
     @Inject
     private static PluginLogger pluginLogger;
+    @Inject
+    private static HopeGift plugin;
 
     /**
      * 存放所有的CDK   键是 CDK 值是兑换码的类型名称
@@ -101,6 +105,7 @@ public class Config {
      */
     private void addCDKToMap(String key) {
         Map<String, Object> keyMap = pluginConfigs.getConfig("cdk").getConfigurationSection(key).getValues(false);
+        pluginLogger.sendConsoleMessage("激活码总量:" + keyMap.size());
         for (Map.Entry<String, Object> entry : keyMap.entrySet()) {
             if (entry.getValue() instanceof Boolean) {
                 registerCDK(key, entry.getKey(), ((Boolean) entry.getValue()).booleanValue());
@@ -115,12 +120,18 @@ public class Config {
      * @return 当返回true时 代表激活码激活成功
      * @throws GiftNotFoundException 当激活码类型无法被找到或未激活时
      */
-    public boolean activeCDK(String cdk, Player player){
+    public boolean activeCDK(final String cdk, Player player){
         String giftTypeKey = allCDKMap.get(cdk);
         try {
-            Gift gift = getGift(giftTypeKey);
+            final Gift gift = getGift(giftTypeKey);
             boolean success = gift.run(player.getName());
-            if (success) {postActiveCDK(gift,cdk);}
+            if (success) {
+                new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        postActiveCDK(gift,cdk);
+                    }
+                }.runTaskAsynchronously(plugin); }
             return success;
         } catch (GiftNotFoundException e) {
             pluginLogger.sendErrorMessage(player.getName()+"尝试使用不存在或未激活的激活码类型["+giftTypeKey+"]");
@@ -136,11 +147,10 @@ public class Config {
     private void postActiveCDK(Gift gift, String cdk) {
         if (gift instanceof RepeatGift){
             RepeatGift repeatGift = (RepeatGift) gift;
-            pluginConfigs.getConfig("gift").set("gift."+gift.getName()+"USER_LIST",repeatGift.getUserList());
+            pluginConfigs.getConfig("gift").set("gift."+gift.getName()+".USER_LIST",repeatGift.getUserList());
             pluginConfigs.saveConfig("gift");
         }else{
             unusedCDKs.remove(cdk);
-            allCDKMap.remove(cdk);
             pluginConfigs.getConfig("cdk").set(gift.getName()+"."+cdk,true);
             pluginConfigs.saveConfig("cdk");
         }
@@ -172,7 +182,7 @@ public class Config {
             if (!enableGift.contains(giftTypeKey)) {
                 throw new GiftNotFoundException();
             }
-            pluginLogger.sendConsoleMessage("初始化Gift实例");
+            //pluginLogger.sendConsoleMessage("初始化Gift实例");
             ConfigurationSection giftData = pluginConfigs.getConfig("gift").getConfigurationSection("gift." + giftTypeKey);
             GiftType giftType = GiftType.valueOf(giftData.getString("type", "UNIQUE"));
             GiftResultType resultType = GiftResultType.valueOf(giftData.getString("result", "COMMANDS"));
@@ -185,7 +195,7 @@ public class Config {
                 giftInstance = new Gift(giftTypeKey,giftType, resultType);
             }
             giftInstance.setCmds(cmds);
-            pluginLogger.sendConsoleMessage(giftInstance.toString());
+            //pluginLogger.sendConsoleMessage(giftInstance.toString());
             giftMap.put(giftTypeKey, giftInstance);
             return giftInstance;
         } else {
@@ -199,8 +209,38 @@ public class Config {
      * @param giftTypename 激活码类别
      * @param name 文件名称
      */
-    public void loadCDKFromFile(String giftTypename, String name) {
+    public synchronized void loadCDKFromFile(final String giftTypename, String name) {
         //TODO 从txt文件种读取CDK 根据文件名称来判断激活码种类
+        File importFile = plugin.getCustomDataFile("import/"+name+".txt");
+        List<String> cdks = Collections.synchronizedList(new ArrayList<>());
+            try {
+                BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(importFile), Charset.defaultCharset()));
+                String lineText;
+                while((lineText = br.readLine()) != null){
+                    cdks.add(lineText);
+                }
+                new BukkitRunnable() {
+
+                    @Override
+                    public void run() {
+                        ConfigurationSection cdkData = pluginConfigs.getConfig("cdk").getConfigurationSection(giftTypename);
+                        CDKCommand.fileExportOrImport = true;
+                        pluginLogger.sendConsoleMessage("激活码类型["+giftTypename+"]导入开始");
+                        for(String cdk : cdks){
+                            cdkData.set(cdk,false);
+                            pluginLogger.sendConsoleMessage("导入激活码 "+cdk);
+                        }
+                        pluginLogger.sendConsoleMessage("激活码类型["+giftTypename+"]导入完成");
+                        pluginConfigs.saveConfig("cdk");
+                        init();
+                        CDKCommand.fileExportOrImport = false;
+                    }
+                }.runTask(plugin);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         pluginLogger.sendConsoleMessage("loadCDKFromFile "+ giftTypename+ " " + name);
     }
 

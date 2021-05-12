@@ -26,6 +26,7 @@ public class RepeatGift extends Gift{
     @Override
     public String toString() {
         return "RepeatGift{" +
+                "name="+ name +
                 "giftType=" + giftType +
                 ", resultType=" + resultType +
                 ", cmds=" + cmds +

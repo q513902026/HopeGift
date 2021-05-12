@@ -51,26 +51,34 @@ public class HopeGift extends JavaPlugin {
      */
     private String prefix = " %s: ";
 
+    @Override
+    public void onLoad() {
+        createFolder();
+        registerBeans();
+        pluginLogger.sendConsoleMessage("Hope's Injector is running!");
+
+    }
+
     /**
      * 当插件开启时
      */
     @Override
     public void onEnable() {
-
-        registerBeans();
-        registerCommands();
-
-        pluginLogger.sendConsoleMessage("Hope's Injector is running!");
         injector.injectClasses();
-
+        registerCommands();
         configManager.saveAllDefaultConfig();
 
+        pluginConfig.init();
         prefix = String.format(prefix,pluginConfig.getPrefix());
 
-        pluginConfig.init();
         pluginLogger.sendConsoleMessage("加载完成.");
         pluginLogger.sendConsoleMessage("Version: "+this.getDescription().getVersion());
 
+    }
+
+    private void createFolder() {
+        getCustomDataFile("import/cdk_import.txt");
+        getCustomDataFile("export/cdk_export.txt");
     }
 
     /**
@@ -105,7 +113,7 @@ public class HopeGift extends JavaPlugin {
         configManager.setPluginLogger(pluginLogger);
         pluginConfig  = injector.register(Config.class,new Config());
 
-        pluginLogger.sendConsoleMessage("Config Loader!");
+        pluginLogger.sendConsoleMessage("初始化加载中!");
 
 
     }
@@ -115,9 +123,12 @@ public class HopeGift extends JavaPlugin {
      */
     @Override
     public void onDisable() {
+        getServer().getScheduler().cancelTasks(instance);
+        this.getCommand("hopegift").setExecutor(null);
+        this.getCommand("cdk").setExecutor(null);
         instance =  null;
         pluginLogger =     null;
-        this.getCommand("hopegift").setExecutor(null);
+
     }
 
     /**

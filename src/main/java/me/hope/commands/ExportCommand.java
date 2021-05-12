@@ -11,7 +11,7 @@ public class ExportCommand extends HopeCommand {
 
     @Override
     public boolean onCommand(CommandSender sender, org.bukkit.command.Command command, String label, String[] args) {
-        if (args.length > 1){
+        if (args.length >= 2){
             String name = args[1];
             if (label.equalsIgnoreCase("export")){
                 getPluginConfig().saveCDKToFile(name);
