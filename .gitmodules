@@ -1,0 +1,3 @@
+[submodule "HopeCore"]
+	path = HopeCore
+	url = https://github.com/q513902026/HopeCore
