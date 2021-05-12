@@ -39,7 +39,7 @@ public class Gift {
             @Override
             public void run() {
                 for(String cmd:cmds){
-                    cmd.replaceAll("%PLAYER%",player);
+                    cmd = cmd.replaceAll("%PLAYER%",player);
                     server.dispatchCommand(server.getConsoleSender(),cmd);
                 }
             }
