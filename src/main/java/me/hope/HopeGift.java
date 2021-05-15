@@ -1,10 +1,7 @@
 package me.hope;
 
 import com.google.common.collect.Lists;
-import me.hope.commands.CDKCommand;
-import me.hope.commands.ExportCommand;
-import me.hope.commands.ImportCommand;
-import me.hope.commands.ReloadConfigCommand;
+import me.hope.commands.*;
 import me.hope.core.PluginCommandMap;
 import me.hope.core.PluginConfig;
 import me.hope.core.PluginLogger;
@@ -88,6 +85,7 @@ public class HopeGift extends JavaPlugin {
         adminCommand.registerCommand("export",new ExportCommand());
         adminCommand.registerCommand("import",new ImportCommand());
         adminCommand.registerCommand("reloadConfig",new ReloadConfigCommand());
+        adminCommand.registerCommand("state",new StateCommand());
         pluginLogger.sendConsoleMessage("注册管理命令成功");
         this.getCommand("hopegift").setExecutor(adminCommand::onCommand);
 
