@@ -119,7 +119,12 @@ public class Config {
         }
     }
 
-
+    /**
+     * 从配置文件中获取 激活码类型
+     * @param giftTypeName 激活码类型名称
+     * @return GiftType的实例
+     * @throws GiftNotFoundException 激活码类型不存在时抛出
+     */
     private GiftType getGiftWithConfigFile(String giftTypeName) throws GiftNotFoundException {
         if (getGiftConfig().isConfigurationSection("gift." + giftTypeName + ".type")) {
             return GiftType.valueOf(getGiftConfig().getString("gift." + giftTypeName + ".type"));
@@ -128,6 +133,10 @@ public class Config {
 
     }
 
+    /**
+     * 快速获取gift配置文件实例
+     * @return gift配置文件实例
+     */
     private FileConfiguration getGiftConfig() {
         return pluginConfigs.getConfig("gift");
     }
@@ -144,6 +153,10 @@ public class Config {
 
     }
 
+    /**
+     * 从配置文件中获取所有激活码类型的集合
+     * @return 所有激活码类型的集合
+     */
     public Set<String> getGiftTypeNames() {
         return getGiftConfig().getConfigurationSection("gift").getKeys(false);
     }
