@@ -46,7 +46,7 @@ public class HopeGift extends JavaPlugin {
     /**
      * 消息前缀
      */
-    private String prefix = " %s: ";
+    private String prefix = "%s: ";
 
     @Override
     public void onLoad() {

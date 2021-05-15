@@ -14,7 +14,7 @@ public class EnableCommand extends HopeCommand {
                 try {
                     getPluginConfig().enableGift(giftTypeName);
                 } catch (GiftNotFoundException e) {
-                    sender.sendMessage(getPlugin().getPrefix()+"未找到"+giftTypeName);
+                    sender.sendMessage(getPlugin().getPrefix()+"未找到"+giftTypeName+",终止命令");
                     return true;
                 }
                 sender.sendMessage(getPlugin().getPrefix()+"启用"+giftTypeName+"完成");

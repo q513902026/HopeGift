@@ -14,10 +14,10 @@ public class DisableCommand extends HopeCommand {
                 try {
                     getPluginConfig().disableGift(giftTypeName);
                 } catch (GiftNotFoundException e) {
-                    sender.sendMessage(getPlugin().getPrefix()+"未找到"+giftTypeName);
+                    sender.sendMessage(getPlugin().getPrefix()+"未找到"+giftTypeName+",终止命令");
                     return true;
                 }
-                sender.sendMessage(getPlugin().getPrefix()+"启用"+giftTypeName+"完成");
+                sender.sendMessage(getPlugin().getPrefix()+"禁用"+giftTypeName+"完成");
                 return true;
             }
         }else{
