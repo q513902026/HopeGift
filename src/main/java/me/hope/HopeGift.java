@@ -87,6 +87,9 @@ public class HopeGift extends JavaPlugin {
         adminCommand.registerCommand("reloadConfig",new ReloadConfigCommand());
         adminCommand.registerCommand("state",new StateCommand());
         adminCommand.registerCommand("states",new StatesCommand());
+        adminCommand.registerCommand("enable",new EnableCommand());
+        adminCommand.registerCommand("disable",new DisableCommand());
+        adminCommand.registerCommand("help",new HelpCommand());
 
         pluginLogger.sendConsoleMessage("注册管理命令成功");
         this.getCommand("hopegift").setExecutor(adminCommand::onCommand);

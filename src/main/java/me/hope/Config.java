@@ -64,15 +64,40 @@ public class Config {
         enableGift = pluginConfigs.getConfig("config").getStringList("enableGifts");
 
         Iterator<String> enableGiftIterator = enableGift.iterator();
-        String key;
         while (enableGiftIterator.hasNext()) {
-            key = enableGiftIterator.next();
-            pluginLogger.sendConsoleMessage("载入类型[" + key + "]的可用激活码");
-            addCDKToMap(key);
-            addGiftToMap(key);
+            addToMap(enableGiftIterator.next());
         }
     }
 
+    private void addToMap(String key) {
+        pluginLogger.sendConsoleMessage("载入类型[" + key + "]的可用激活码");
+        addCDKToMap(key);
+        try {
+            addGiftToMap(key);
+        } catch (GiftNotFoundException e) {
+            pluginLogger.sendConsoleMessage("载入类型[" + key + "]时,发生了错误.");
+        }
+    }
+
+    /**
+     * 从配置文件中启用激活码类型
+     * @param key
+     */
+    public void enableGift(String key) throws GiftNotFoundException {
+        enableGift.add(key);
+        addToMap(key);
+    }
+
+    /**
+     * 从内存中关闭激活码类型
+     * @param key
+     */
+    public void disableGift(String key) throws GiftNotFoundException {
+        pluginLogger.sendConsoleMessage("清除类型[" + key + "]的激活码");
+        removeGiftWithMap(key);
+        removeCDKWithMap(key);
+        enableGift.remove(key);
+    }
     /**
      * 根据给定的激活码类型 如果CDK已被启用则从内存中返回使用情况，否则从文件中读取
      *
@@ -167,12 +192,19 @@ public class Config {
      *
      * @param key 激活码类型
      */
-    private void addGiftToMap(String key) {
-        try {
+    private void addGiftToMap(String key) throws GiftNotFoundException {
             getGift(key);
-        } catch (GiftNotFoundException e) {
-            pluginLogger.sendErrorMessage("载入类型[" + key + "]时发生了未经处理错误");
-        }
+
+    }
+
+    /**
+     * 根据激活码的类型 从内存中去除
+     * @param key 激活码类型
+     */
+    private void removeGiftWithMap(String key) throws GiftNotFoundException {
+            Gift gift = getGift(key);
+            giftMap.remove(gift);
+
     }
 
     /**
@@ -204,6 +236,16 @@ public class Config {
         }
     }
 
+    /**
+     * 从内存中去除激活码
+     * @param key
+     */
+    private void removeCDKWithMap(String key){
+        Set<String> CDKs = pluginConfigs.getConfig("cdk").getConfigurationSection(key).getKeys(false);
+        for(String cdk : CDKs){
+            unreigsterCDK(cdk);
+        }
+    }
     /**
      * 唯一激活CDK的入口
      *
@@ -261,6 +303,15 @@ public class Config {
             unusedCDKs.add(cdk);
         }
         allCDKMap.put(cdk, giftTypeKey);
+    }
+
+    /**
+     * 从内存中去除激活码
+     * @param cdk 要去除的激活码
+     */
+    private void unreigsterCDK(String cdk){
+        if(unusedCDKs.contains(cdk)){unusedCDKs.remove(cdk);};
+        allCDKMap.remove(cdk);
     }
 
     /**
@@ -380,7 +431,13 @@ public class Config {
         init();
     }
 
+    /**
+     * 从内存直接判断启用的激活码类型
+     * @param giftTypeName 激活码类型名称
+     * @return 如果返回false，则被禁用
+     */
     public boolean isEnableByGiftType(String giftTypeName) {
         return enableGift.contains(giftTypeName);
     }
+
 }
