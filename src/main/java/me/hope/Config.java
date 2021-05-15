@@ -95,12 +95,7 @@ public class Config {
                 return result;
             }
         } else {
-            GiftType giftType = null;
-            try {
-                giftType = getGiftWithConfigFile(giftTypeName);
-            } catch (GiftNotFoundException e) {
-                e.printStackTrace();
-            }
+            GiftType giftType = getGiftWithConfigFile(giftTypeName);
             int result = 0;
             if (giftType == GiftType.REPEAT) {
                 return getGiftConfig().getStringList("gift." + giftTypeName + ".USER_LIST").size();
@@ -126,8 +121,10 @@ public class Config {
      * @throws GiftNotFoundException 激活码类型不存在时抛出
      */
     private GiftType getGiftWithConfigFile(String giftTypeName) throws GiftNotFoundException {
-        if (getGiftConfig().isConfigurationSection("gift." + giftTypeName + ".type")) {
-            return GiftType.valueOf(getGiftConfig().getString("gift." + giftTypeName + ".type"));
+        if (getGiftConfig().isConfigurationSection("gift." + giftTypeName)) {
+            String giftTypeString = getGiftConfig().getString("gift." + giftTypeName + ".type");
+            GiftType giftType = GiftType.valueOf(giftTypeString);
+            return giftType;
         }
         throw new GiftNotFoundException();
 
@@ -147,7 +144,11 @@ public class Config {
      * @param giftTypeName 激活码类型名称
      * @return 返回激活码总数量
      */
-    public int getCDKsSizeByGiftTypeName(String giftTypeName) {
+    public int getCDKsSizeByGiftTypeName(String giftTypeName) throws GiftNotFoundException {
+        GiftType giftType = getGiftWithConfigFile(giftTypeName);
+        if(giftType == GiftType.REPEAT){
+            return -1;
+        }
         Map<String, Object> keyMap = pluginConfigs.getConfig("cdk").getConfigurationSection(giftTypeName).getValues(false);
         return keyMap.size();
 
