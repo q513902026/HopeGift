@@ -112,10 +112,20 @@ public class Config {
 
         return 0;
     }
+
+    /**
+     * 从配置文件中获取特定激活码总量
+     * @param giftTypeName 激活码类型名称
+     * @return 返回激活码总数量
+     */
     public int getCDKsSizeByGiftTypeName(String giftTypeName) {
         Map<String, Object> keyMap = pluginConfigs.getConfig("cdk").getConfigurationSection(giftTypeName).getValues(false);
         return keyMap.size();
 
+    }
+
+    public Set<String> getGiftTypeNames() {
+        return pluginConfigs.getConfig("gift").getConfigurationSection("gift").getKeys(false);
     }
 
     /**
@@ -335,6 +345,5 @@ public class Config {
         pluginConfigs.reloadAllConfig();
         init();
     }
-
 
 }
