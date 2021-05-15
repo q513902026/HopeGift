@@ -11,6 +11,7 @@ public class StatesCommand extends StateCommand{
         if(args.length == 0){
             if (label.equalsIgnoreCase("states")){
                 Set<String> giftTypeNames = getPluginConfig().getGiftTypeNames();
+
                 for(String giftTypeName : giftTypeNames){
                     super.onCommand(sender,command,"state", new String[]{giftTypeName});
                 }

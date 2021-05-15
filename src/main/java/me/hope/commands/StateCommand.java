@@ -21,6 +21,7 @@ public class StateCommand extends HopeCommand {
                     sender.sendMessage(getPlugin().getPrefix()+"输入的激活码类型"+giftTypeName+"不存在 请检查后重新输入");
                     return true;
                 }
+                sender.sendMessage(getPlugin().getPrefix()+giftTypeName+" 状态:" + (getPluginConfig().isEnableByGiftType(giftTypeName) ? "启用" : "禁用"));
                 if (maxCDKSize == -1){
                     sender.sendMessage(getPlugin().getPrefix()+"激活码类型:"+giftTypeName+", 被使用了"+usedCDKSize+"次");
                     return true;

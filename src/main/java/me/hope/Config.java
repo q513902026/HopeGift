@@ -380,4 +380,7 @@ public class Config {
         init();
     }
 
+    public boolean isEnableByGiftType(String giftTypeName) {
+        return enableGift.contains(giftTypeName);
+    }
 }
