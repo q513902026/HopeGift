@@ -13,6 +13,7 @@ import me.hope.core.inject.annotation.Inject;
 import me.hope.exception.CDKNotFoundException;
 import me.hope.exception.GiftNotFoundException;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -78,43 +79,62 @@ public class Config {
      * @param giftTypeName 激活码类型名称
      * @return 使用的激活码数量
      */
-    public int getCDKsStateByGiftTypeName(String giftTypeName) {
+    public int getCDKsStateByGiftTypeName(String giftTypeName) throws GiftNotFoundException {
         if (enableGift.contains(giftTypeName)) {
-            try {
-                Gift gift = getGift(giftTypeName);
-                if (gift instanceof RepeatGift) {
-                    return ((RepeatGift) gift).getUserList().size();
-                } else {
-                    int result = 0;
-                    for (Map.Entry<String, String> entry : allCDKMap.entrySet()) {
-                        if (entry.getValue().equals(giftTypeName) && unusedCDKs.contains(entry.getKey())) {
-                            result += 1;
-                        }
-                    }
-                    return result;
-                }
 
+            Gift gift = getGift(giftTypeName);
+            if (gift instanceof RepeatGift) {
+                return ((RepeatGift) gift).getUserList().size();
+            } else {
+                int result = 0;
+                for (Map.Entry<String, String> entry : allCDKMap.entrySet()) {
+                    if (entry.getValue().equals(giftTypeName) && unusedCDKs.contains(entry.getKey())) {
+                        result += 1;
+                    }
+                }
+                return result;
+            }
+        } else {
+            GiftType giftType = null;
+            try {
+                giftType = getGiftWithConfigFile(giftTypeName);
             } catch (GiftNotFoundException e) {
                 e.printStackTrace();
             }
-        } else {
-            Map<String, Object> keyMap = pluginConfigs.getConfig("cdk").getConfigurationSection(giftTypeName).getValues(false);
             int result = 0;
-            for (Map.Entry<String, Object> entry : keyMap.entrySet()) {
-                if (entry.getValue() instanceof Boolean) {
-                    if ((boolean) entry.getValue()) {
-                        result += 1;
+            if (giftType == GiftType.REPEAT) {
+                return getGiftConfig().getStringList("gift." + giftTypeName + ".USER_LIST").size();
+            } else {
+                Map<String, Object> keyMap = pluginConfigs.getConfig("cdk").getConfigurationSection(giftTypeName).getValues(false);
+
+                for (Map.Entry<String, Object> entry : keyMap.entrySet()) {
+                    if (entry.getValue() instanceof Boolean) {
+                        if ((boolean) entry.getValue()) {
+                            result += 1;
+                        }
                     }
                 }
             }
             return result;
         }
+    }
 
-        return 0;
+
+    private GiftType getGiftWithConfigFile(String giftTypeName) throws GiftNotFoundException {
+        if (getGiftConfig().isConfigurationSection("gift." + giftTypeName + ".type")) {
+            return GiftType.valueOf(getGiftConfig().getString("gift." + giftTypeName + ".type"));
+        }
+        throw new GiftNotFoundException();
+
+    }
+
+    private FileConfiguration getGiftConfig() {
+        return pluginConfigs.getConfig("gift");
     }
 
     /**
      * 从配置文件中获取特定激活码总量
+     *
      * @param giftTypeName 激活码类型名称
      * @return 返回激活码总数量
      */
@@ -125,7 +145,7 @@ public class Config {
     }
 
     public Set<String> getGiftTypeNames() {
-        return pluginConfigs.getConfig("gift").getConfigurationSection("gift").getKeys(false);
+        return getGiftConfig().getConfigurationSection("gift").getKeys(false);
     }
 
     /**
@@ -206,7 +226,7 @@ public class Config {
     private void postActiveCDK(Gift gift, String cdk) {
         if (gift instanceof RepeatGift) {
             RepeatGift repeatGift = (RepeatGift) gift;
-            pluginConfigs.getConfig("gift").set("gift." + gift.getName() + ".USER_LIST", repeatGift.getUserList());
+            getGiftConfig().set("gift." + gift.getName() + ".USER_LIST", repeatGift.getUserList());
             pluginConfigs.saveConfig("gift");
         } else {
             unusedCDKs.remove(cdk);
@@ -242,7 +262,7 @@ public class Config {
                 throw new GiftNotFoundException();
             }
             //pluginLogger.sendConsoleMessage("初始化Gift实例");
-            ConfigurationSection giftData = pluginConfigs.getConfig("gift").getConfigurationSection("gift." + giftTypeKey);
+            ConfigurationSection giftData = getGiftConfig().getConfigurationSection("gift." + giftTypeKey);
             GiftType giftType = GiftType.valueOf(giftData.getString("type", "UNIQUE"));
             GiftResultType resultType = GiftResultType.valueOf(giftData.getString("result", "COMMANDS"));
             List<String> cmds = giftData.getStringList("value");
