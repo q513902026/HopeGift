@@ -3,16 +3,20 @@
 # 命令
 ## 已完成:
 ### 普通命令 权限:hopegift.use
+```
 /cdk [cdk]  激活CDK
+```
 ### 管理员命令 权限:hopegift.admin
+```
 /hopegift reloadConfig  重载配置
 /hopegift import [激活码类型名称] [文件名称]  从文件中导入CDK到配置文件中 使其对应相应的激活码奖品类型
 /hopegift export [激活码类型名称]                    从配置文件中导出特定激活码奖品类型所属的CDK
 /hopegift enable [激活码类型名称]                   从配置文件中启用特定激活码奖品
 /hopegift disable [激活码类型名称]                  从内存中卸载特定激活码奖品
-/hopegift states                                                 显示所有激活码奖品的启用状态和使用次数统计
+/hopegift states                                  显示所有激活码奖品的启用状态和使用次数统计
 /hopegift state [激活码类型名称]                      显示特定激活码奖品的启用状态和使用次数统计
-/hopegift help                                                    显示所有注册的管理命令
+/hopegift help                                      显示所有注册的管理命令
+```
 ## 配置文件
 ### cdk.yml
 用于存储cdk的使用
