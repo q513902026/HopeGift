@@ -86,6 +86,11 @@ public class Config {
     public void enableGift(String key) throws GiftNotFoundException {
         enableGift.add(key);
         addToMap(key);
+        saveEnableGifts();
+    }
+
+    private void saveEnableGifts() {
+        pluginConfigs.getConfig("config").set("enableGifts",enableGift);
     }
 
     /**
@@ -97,6 +102,7 @@ public class Config {
         removeGiftWithMap(key);
         removeCDKWithMap(key);
         enableGift.remove(key);
+        saveEnableGifts();
     }
     /**
      * 根据给定的激活码类型 如果CDK已被启用则从内存中返回使用情况，否则从文件中读取
