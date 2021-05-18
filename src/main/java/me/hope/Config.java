@@ -113,7 +113,7 @@ public class Config {
             } else {
                 int result = 0;
                 for (Map.Entry<String, String> entry : allCDKMap.entrySet()) {
-                    if (entry.getValue().equals(giftTypeName) && unusedCDKs.contains(entry.getKey())) {
+                    if (entry.getValue().equals(giftTypeName) && !unusedCDKs.contains(entry.getKey())) {
                         result += 1;
                     }
                 }
