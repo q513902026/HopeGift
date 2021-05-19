@@ -393,11 +393,12 @@ public class Config {
                     }else{
                         cdkData = getCdkConfig().createSection(giftTypeName);
                     }
-                    CDKCommand.setExportOrImport(true);
+
                     pluginLogger.sendConsoleMessage("激活码类型[" + giftTypeName + "]导入开始");
                     if (cdks.isEmpty()) {
                         pluginLogger.sendErrorMessage("文件[" + name + "]中没有数据.");
                     } else {
+                        CDKCommand.setExportOrImport(true);
                         for (String cdk : cdks) {
                             cdkData.set(cdk, false);
                             pluginLogger.sendConsoleMessage("导入激活码 " + cdk);
