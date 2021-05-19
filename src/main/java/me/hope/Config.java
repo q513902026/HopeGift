@@ -96,6 +96,7 @@ public class Config {
 
     private void saveEnableGifts() {
         pluginConfigs.getConfig("config").set("enableGifts", enableGift);
+        pluginConfigs.saveConfig("config");
     }
 
     /**
@@ -278,12 +279,7 @@ public class Config {
             final Gift gift = getGift(giftTypeKey);
             boolean success = gift.run(player.getName());
             if (success) {
-                new BukkitRunnable() {
-                    @Override
-                    public void run() {
-                        postActiveCDK(gift, cdk);
-                    }
-                }.runTaskAsynchronously(plugin);
+                postActiveCDK(gift, cdk);
             }
             return success;
         } catch (GiftNotFoundException e) {
@@ -461,7 +457,7 @@ public class Config {
     }
 
     public String getPrefix() {
-        return pluginConfigs.getConfig("config").getString("prefix").replaceAll("&", "§");
+        return pluginConfigs.getConfig("config").getString("prefix","[CDK]").replaceAll("&", "§");
     }
 
     /**
