@@ -69,6 +69,10 @@ public class Config {
         }
     }
 
+    /**
+     * 把激活码添加到内存中的入口
+     * @param key
+     */
     private void addToMap(String key) {
         pluginLogger.sendConsoleMessage("载入类型[" + key + "]的可用激活码");
         addCDKToMap(key);
@@ -81,6 +85,7 @@ public class Config {
 
     /**
      * 从配置文件中启用激活码类型
+     *
      * @param key
      */
     public void enableGift(String key) throws GiftNotFoundException {
@@ -90,11 +95,12 @@ public class Config {
     }
 
     private void saveEnableGifts() {
-        pluginConfigs.getConfig("config").set("enableGifts",enableGift);
+        pluginConfigs.getConfig("config").set("enableGifts", enableGift);
     }
 
     /**
      * 从内存中关闭激活码类型
+     *
      * @param key
      */
     public void disableGift(String key) throws GiftNotFoundException {
@@ -104,6 +110,7 @@ public class Config {
         enableGift.remove(key);
         saveEnableGifts();
     }
+
     /**
      * 根据给定的激活码类型 如果CDK已被启用则从内存中返回使用情况，否则从文件中读取
      *
@@ -131,7 +138,7 @@ public class Config {
             if (giftType == GiftType.REPEAT) {
                 return getGiftConfig().getStringList("gift." + giftTypeName + ".USER_LIST").size();
             } else {
-                Map<String, Object> keyMap = pluginConfigs.getConfig("cdk").getConfigurationSection(giftTypeName).getValues(false);
+                Map<String, Object> keyMap = getCdkConfig().getConfigurationSection(giftTypeName).getValues(false);
 
                 for (Map.Entry<String, Object> entry : keyMap.entrySet()) {
                     if (entry.getValue() instanceof Boolean) {
@@ -147,6 +154,7 @@ public class Config {
 
     /**
      * 从配置文件中获取 激活码类型
+     *
      * @param giftTypeName 激活码类型名称
      * @return GiftType的实例
      * @throws GiftNotFoundException 激活码类型不存在时抛出
@@ -163,6 +171,7 @@ public class Config {
 
     /**
      * 快速获取gift配置文件实例
+     *
      * @return gift配置文件实例
      */
     private FileConfiguration getGiftConfig() {
@@ -177,16 +186,17 @@ public class Config {
      */
     public int getCDKsSizeByGiftTypeName(String giftTypeName) throws GiftNotFoundException {
         GiftType giftType = getGiftWithConfigFile(giftTypeName);
-        if(giftType == GiftType.REPEAT){
+        if (giftType == GiftType.REPEAT) {
             return -1;
         }
-        Map<String, Object> keyMap = pluginConfigs.getConfig("cdk").getConfigurationSection(giftTypeName).getValues(false);
+        Map<String, Object> keyMap = getCdkConfig().getConfigurationSection(giftTypeName).getValues(false);
         return keyMap.size();
 
     }
 
     /**
      * 从配置文件中获取所有激活码类型的集合
+     *
      * @return 所有激活码类型的集合
      */
     public Set<String> getGiftTypeNames() {
@@ -199,17 +209,18 @@ public class Config {
      * @param key 激活码类型
      */
     private void addGiftToMap(String key) throws GiftNotFoundException {
-            getGift(key);
+        getGift(key);
 
     }
 
     /**
      * 根据激活码的类型 从内存中去除
+     *
      * @param key 激活码类型
      */
     private void removeGiftWithMap(String key) throws GiftNotFoundException {
-            Gift gift = getGift(key);
-            giftMap.remove(gift);
+        Gift gift = getGift(key);
+        giftMap.remove(gift);
 
     }
 
@@ -233,7 +244,7 @@ public class Config {
      * @param key 激活码的类型名称
      */
     private void addCDKToMap(String key) {
-        Map<String, Object> keyMap = pluginConfigs.getConfig("cdk").getConfigurationSection(key).getValues(false);
+        Map<String, Object> keyMap = getCdkConfig().getConfigurationSection(key).getValues(false);
         pluginLogger.sendConsoleMessage("激活码总量:" + keyMap.size());
         for (Map.Entry<String, Object> entry : keyMap.entrySet()) {
             if (entry.getValue() instanceof Boolean) {
@@ -244,14 +255,16 @@ public class Config {
 
     /**
      * 从内存中去除激活码
+     *
      * @param key
      */
-    private void removeCDKWithMap(String key){
-        Set<String> CDKs = pluginConfigs.getConfig("cdk").getConfigurationSection(key).getKeys(false);
-        for(String cdk : CDKs){
+    private void removeCDKWithMap(String key) {
+        Set<String> CDKs = getCdkConfig().getConfigurationSection(key).getKeys(false);
+        for (String cdk : CDKs) {
             unreigsterCDK(cdk);
         }
     }
+
     /**
      * 唯一激活CDK的入口
      *
@@ -292,7 +305,7 @@ public class Config {
             pluginConfigs.saveConfig("gift");
         } else {
             unusedCDKs.remove(cdk);
-            pluginConfigs.getConfig("cdk").set(gift.getName() + "." + cdk, true);
+            getCdkConfig().set(gift.getName() + "." + cdk, true);
             pluginConfigs.saveConfig("cdk");
         }
     }
@@ -313,10 +326,11 @@ public class Config {
 
     /**
      * 从内存中去除激活码
+     *
      * @param cdk 要去除的激活码
      */
-    private void unreigsterCDK(String cdk){
-        if(unusedCDKs.contains(cdk)){unusedCDKs.remove(cdk);};
+    private void unreigsterCDK(String cdk) {
+        unusedCDKs.remove(cdk);
         allCDKMap.remove(cdk);
     }
 
@@ -371,15 +385,23 @@ public class Config {
                 }
             }
             new BukkitRunnable() {
-
                 @Override
                 public void run() {
-                    ConfigurationSection cdkData = pluginConfigs.getConfig("cdk").getConfigurationSection(giftTypeName);
+                    ConfigurationSection cdkData;
+                    if(getCdkConfig().isConfigurationSection(giftTypeName)){
+                        cdkData = getCdkConfig().getConfigurationSection(giftTypeName);
+                    }else{
+                        cdkData = getCdkConfig().createSection(giftTypeName);
+                    }
                     CDKCommand.setExportOrImport(true);
                     pluginLogger.sendConsoleMessage("激活码类型[" + giftTypeName + "]导入开始");
-                    for (String cdk : cdks) {
-                        cdkData.set(cdk, false);
-                        pluginLogger.sendConsoleMessage("导入激活码 " + cdk);
+                    if (cdks.isEmpty()) {
+                        pluginLogger.sendErrorMessage("文件[" + name + "]中没有数据.");
+                    } else {
+                        for (String cdk : cdks) {
+                            cdkData.set(cdk, false);
+                            pluginLogger.sendConsoleMessage("导入激活码 " + cdk);
+                        }
                     }
                     pluginLogger.sendConsoleMessage("激活码类型[" + giftTypeName + "]导入完成");
                     pluginConfigs.saveConfig("cdk");
@@ -394,6 +416,14 @@ public class Config {
     }
 
     /**
+     * 统一获取cdk配置文件
+     * @return cdk配置文件
+     */
+    private FileConfiguration getCdkConfig() {
+        return pluginConfigs.getConfig("cdk");
+    }
+
+    /**
      * 把CDK输出到文件中
      *
      * @param fileName 输出的CDK激活码类型名称
@@ -401,7 +431,7 @@ public class Config {
     public synchronized void saveCDKToFile(String giftTypeName, String fileName) {
         File exportFile = plugin.getCustomDataFile("export/" + fileName + ".txt");
         CDKCommand.setExportOrImport(true);
-        Set<String> cdks = Collections.synchronizedSet(pluginConfigs.getConfig("cdk").getConfigurationSection(giftTypeName).getKeys(false));
+        Set<String> cdks = Collections.synchronizedSet(getCdkConfig().getConfigurationSection(giftTypeName).getKeys(false));
         CDKCommand.setExportOrImport(false);
         FileWriter fw;
         PrintWriter pw;
@@ -410,9 +440,13 @@ public class Config {
             pw = new PrintWriter(fw);
             synchronized (cdks) {
                 pluginLogger.sendConsoleMessage("激活码类型[" + giftTypeName + "]导出开始");
-                for (String cdk : cdks) {
-                    pw.println(cdk);
-                    pluginLogger.sendConsoleMessage("导出激活码 " + cdk);
+                if (cdks.isEmpty()) {
+                    pluginLogger.sendErrorMessage("激活码类型[" + giftTypeName + "]中没有数据.");
+                } else {
+                    for (String cdk : cdks) {
+                        pw.println(cdk);
+                        pluginLogger.sendConsoleMessage("导出激活码 " + cdk);
+                    }
                 }
                 pw.close();
                 fw.close();
@@ -439,6 +473,7 @@ public class Config {
 
     /**
      * 从内存直接判断启用的激活码类型
+     *
      * @param giftTypeName 激活码类型名称
      * @return 如果返回false，则被禁用
      */
