@@ -375,7 +375,7 @@ public class Config {
                 @Override
                 public void run() {
                     ConfigurationSection cdkData = pluginConfigs.getConfig("cdk").getConfigurationSection(giftTypeName);
-                    CDKCommand.fileExportOrImport = true;
+                    CDKCommand.setExportOrImport(true);
                     pluginLogger.sendConsoleMessage("激活码类型[" + giftTypeName + "]导入开始");
                     for (String cdk : cdks) {
                         cdkData.set(cdk, false);
@@ -384,7 +384,7 @@ public class Config {
                     pluginLogger.sendConsoleMessage("激活码类型[" + giftTypeName + "]导入完成");
                     pluginConfigs.saveConfig("cdk");
                     init();
-                    CDKCommand.fileExportOrImport = false;
+                    CDKCommand.setExportOrImport(false);
                 }
             }.runTask(plugin);
         } catch (IOException e) {
@@ -400,9 +400,9 @@ public class Config {
      */
     public synchronized void saveCDKToFile(String giftTypeName, String fileName) {
         File exportFile = plugin.getCustomDataFile("export/" + fileName + ".txt");
-        CDKCommand.fileExportOrImport = true;
+        CDKCommand.setExportOrImport(true);
         Set<String> cdks = Collections.synchronizedSet(pluginConfigs.getConfig("cdk").getConfigurationSection(giftTypeName).getKeys(false));
-        CDKCommand.fileExportOrImport = false;
+        CDKCommand.setExportOrImport(false);
         FileWriter fw;
         PrintWriter pw;
         try {

@@ -20,7 +20,7 @@ public class CDKCommand extends HopeCommand {
             if (sender instanceof Player) {
                 String cdk = args[0];
                 try {
-                    if (fileExportOrImport){
+                    if (isExportOrImport()){
                         sender.sendMessage(getPlugin().getPrefix()+"CDK系统维护中,请稍后再试");
                         return true;
                     }
@@ -43,5 +43,12 @@ public class CDKCommand extends HopeCommand {
             }
         }
         return false;
+    }
+
+    public static synchronized boolean isExportOrImport(){
+        return CDKCommand.fileExportOrImport;
+    }
+    public static synchronized void setExportOrImport(boolean states){
+        CDKCommand.fileExportOrImport = states;
     }
 }

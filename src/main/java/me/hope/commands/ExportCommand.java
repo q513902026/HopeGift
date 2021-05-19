@@ -22,7 +22,11 @@ public class ExportCommand extends HopeCommand {
                 new BukkitRunnable() {
                     @Override
                     public void run() {
+                        try{
                         getPluginConfig().saveCDKToFile(giftTypeName,fileName);
+                        }finally {
+                            CDKCommand.setExportOrImport(false);
+                        }
                     }
                 }.runTaskAsynchronously(getPlugin());
                 sender.sendMessage(getPlugin().getPrefix()+"导出文件中"+fileName +".");
