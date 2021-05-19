@@ -4,7 +4,6 @@ package me.hope.commands;
 import me.hope.commands.abstractClass.HopeCommand;
 import me.hope.exception.CDKNotFoundException;
 import org.bukkit.command.Command;
-
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -49,6 +48,7 @@ public class CDKCommand extends HopeCommand {
         return CDKCommand.fileExportOrImport;
     }
     public static synchronized void setExportOrImport(boolean states){
+        CDKCommand.getPluginLogger().sendConsoleMessage("文件导入状态:"+states);
         CDKCommand.fileExportOrImport = states;
     }
 }

@@ -20,12 +20,7 @@ public class ImportCommand extends HopeCommand {
                 new BukkitRunnable() {
                     @Override
                     public void run() {
-                        try{
                         getPluginConfig().loadCDKFromFile(giftTypeName,fileName);
-
-                        }finally{
-                            CDKCommand.setExportOrImport(false);
-                        }
                     }
                 }.runTaskAsynchronously(getPlugin());
                 sender.sendMessage(getPlugin().getPrefix()+"导入文件中"+ fileName +".");

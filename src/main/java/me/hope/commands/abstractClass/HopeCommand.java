@@ -15,15 +15,15 @@ public abstract class HopeCommand implements CommandExecutor {
     @Inject
     private static PluginLogger pluginLogger;
 
-    protected PluginLogger getPluginLogger() {
+    protected static PluginLogger getPluginLogger() {
         return pluginLogger;
     }
 
-    protected HopeGift getPlugin() {
+    protected static HopeGift getPlugin() {
         return plugin;
     }
 
-    protected Config getPluginConfig() {
+    protected static Config getPluginConfig() {
         return pluginConfig;
     }
 }
