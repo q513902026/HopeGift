@@ -8,6 +8,7 @@ import me.hope.core.PluginLogger;
 import me.hope.core.inject.Injector;
 import me.hope.core.inject.InjectorBuilder;
 import org.bukkit.Server;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -61,6 +62,13 @@ public class HopeGift extends JavaPlugin {
      */
     @Override
     public void onEnable() {
+        pluginLogger.sendConsoleMessage("正在检查依赖的HopeCore版本");
+        if (!checkHopeCoreVersion()){
+            pluginLogger.sendConsoleMessage("依赖的HopeCore版本不符合,关闭中....");
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
+        pluginLogger.sendConsoleMessage("依赖的HopeCore版本正确.");
         injector.injectClasses();
         registerCommands();
         configManager.saveAllDefaultConfig();
@@ -70,9 +78,39 @@ public class HopeGift extends JavaPlugin {
 
         pluginLogger.sendConsoleMessage("加载完成.");
         pluginLogger.sendConsoleMessage("Version: "+this.getDescription().getVersion());
-
+        pluginLogger.sendConsoleMessage("本插件更新不能在运行时进行覆盖文件更新,会导致加载错误.");
     }
 
+    /**
+     * 用来保存HopeCore依赖的版本
+     */
+    private static int[] afterVersion = new int[]{1,0,2};
+
+    /**
+     * 用来对比HopeCore的版本是否正确
+     * @return
+     */
+    private boolean checkHopeCoreVersion(){
+        Plugin hopeCore = getServer().getPluginManager().getPlugin("HopeCore");
+        if(hopeCore == null){
+            pluginLogger.sendConsoleMessage("HopeCore不存在");
+            return false;
+        }
+        String verStr = hopeCore.getDescription().getVersion();
+        String[] versionsStr = verStr.split("\\.");
+        int[] versions = new int[3];
+        for (int index = 0; index < versionsStr.length; index++) {
+            versions[index] = Integer.parseInt(versionsStr[index]);
+        }
+        if(versions[0] >=afterVersion[0] & versions[1] >=afterVersion[1] & versions[2] >= afterVersion[2]){
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * 创建文件夹和示例文件
+     */
     private void createFolder() {
         getCustomDataFile("import/cdk_import.txt");
         getCustomDataFile("export/cdk_export.txt");
