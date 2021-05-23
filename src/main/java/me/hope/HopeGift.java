@@ -54,7 +54,7 @@ public class HopeGift extends JavaPlugin {
         createFolder();
         registerBeans();
         pluginLogger.sendConsoleMessage("Hope's Injector is running!");
-
+        injector.injectClasses();
     }
 
     /**
@@ -64,16 +64,19 @@ public class HopeGift extends JavaPlugin {
     public void onEnable() {
         pluginLogger.sendConsoleMessage("正在检查依赖的HopeCore版本");
         if (!checkHopeCoreVersion()){
-            pluginLogger.sendConsoleMessage("依赖的HopeCore版本不符合,关闭中....");
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
         pluginLogger.sendConsoleMessage("依赖的HopeCore版本正确.");
-        injector.injectClasses();
         registerCommands();
         configManager.saveAllDefaultConfig();
 
         pluginConfig.init();
+        if(Config.overrideUpdateError){
+            pluginLogger.sendErrorMessage("覆盖更新导致错误,正在关闭插件!");
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
         prefix = String.format(prefix,pluginConfig.getPrefix());
 
         pluginLogger.sendConsoleMessage("加载完成.");
@@ -102,7 +105,10 @@ public class HopeGift extends JavaPlugin {
         for (int index = 0; index < versionsStr.length; index++) {
             versions[index] = Integer.parseInt(versionsStr[index]);
         }
+        pluginLogger.sendConsoleMessage(String.format("HopeCore 当前版本: %s",verStr));
+        pluginLogger.sendConsoleMessage(String.format("依赖 HopeCore 最低版本: %s.%s.%s",afterVersion[0],afterVersion[1],afterVersion[2]));
         if(versions[0] >=afterVersion[0] & versions[1] >=afterVersion[1] & versions[2] >= afterVersion[2]){
+
             return true;
         }
         return false;
@@ -120,19 +126,19 @@ public class HopeGift extends JavaPlugin {
      * 注册命令
      */
     private void registerCommands() {
-        adminCommand.registerCommand("export",new ExportCommand());
-        adminCommand.registerCommand("import",new ImportCommand());
-        adminCommand.registerCommand("reloadConfig",new ReloadConfigCommand());
-        adminCommand.registerCommand("state",new StateCommand());
-        adminCommand.registerCommand("states",new StatesCommand());
-        adminCommand.registerCommand("enable",new EnableCommand());
-        adminCommand.registerCommand("disable",new DisableCommand());
-        adminCommand.registerCommand("help",new HelpCommand());
+        adminCommand.registerCommand("export",injector.getSingleton(CDKCommand.class));
+        adminCommand.registerCommand("import",injector.getSingleton(ImportCommand.class));
+        adminCommand.registerCommand("reloadConfig",injector.getSingleton(ReloadConfigCommand.class));
+        adminCommand.registerCommand("state",injector.getSingleton(StateCommand.class));
+        adminCommand.registerCommand("states",injector.getSingleton(StatesCommand.class));
+        adminCommand.registerCommand("enable",injector.getSingleton(EnableCommand.class));
+        adminCommand.registerCommand("disable",injector.getSingleton(DisableCommand.class));
+        adminCommand.registerCommand("help",injector.getSingleton(HelpCommand.class));
 
         pluginLogger.sendConsoleMessage("注册管理命令成功");
         this.getCommand("hopegift").setExecutor(adminCommand::onCommand);
 
-        this.getCommand("cdk").setExecutor(new CDKCommand()::onCommand);
+        this.getCommand("cdk").setExecutor(injector.getSingleton(CDKCommand.class)::onCommand);
         pluginLogger.sendConsoleMessage("注册CDK命令成功");
     }
 
@@ -167,8 +173,9 @@ public class HopeGift extends JavaPlugin {
         getServer().getScheduler().cancelTasks(instance);
         this.getCommand("hopegift").setExecutor(null);
         this.getCommand("cdk").setExecutor(null);
+        injector = null;
         instance =  null;
-        pluginLogger =     null;
+        pluginLogger =  null;
 
     }
 
@@ -199,5 +206,9 @@ public class HopeGift extends JavaPlugin {
      */
     public String getPrefix(){
         return prefix;
+    }
+
+    public static Injector getInjector() {
+        return injector;
     }
 }

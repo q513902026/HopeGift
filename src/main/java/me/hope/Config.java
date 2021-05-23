@@ -51,11 +51,18 @@ public class Config {
      * 存放 所有启用的兑换码类型的名称
      */
     private List<String> enableGift;
-
+    public static boolean overrideUpdateError = false;
     /**
      * 初始化
      */
     public void init() {
+        if(pluginLogger == null){
+            System.out.println("检测到覆盖更新,强行中断方法");
+            overrideUpdateError = true;
+            return;
+        }else{
+            overrideUpdateError = false;
+        }
         allCDKMap.clear();
         unusedCDKs.clear();
         giftMap.clear();
@@ -516,4 +523,15 @@ public class Config {
         return enableGift.contains(giftTypeName);
     }
 
+    /**
+     * 快速创建默认的礼包
+     * @param giftTypeName 激活码类型名称
+     * @param giftType 激活码的类型
+     * @param resultType 激活码执行类型
+     * @param defaultCmd 默认的执行行
+     * @return 成功则返回true
+     */
+    public boolean createGift(String giftTypeName, GiftType giftType, GiftResultType resultType, String defaultCmd) {
+        return false;
+    }
 }

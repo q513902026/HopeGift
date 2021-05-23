@@ -5,7 +5,9 @@ import me.hope.HopeGift;
 import me.hope.core.enums.GiftResultType;
 import me.hope.core.enums.GiftType;
 import me.hope.core.inject.annotation.Inject;
+import org.bukkit.Location;
 import org.bukkit.Server;
+import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.Arrays;
@@ -35,10 +37,15 @@ public class Gift {
     }
 
     public boolean run(final String player){
+        Player p = server.getPlayerExact(player);
+        final Location location = p.getLocation();
         new BukkitRunnable() {
             @Override
             public void run() {
                 for(String cmd:cmds){
+                    cmd = cmd.replaceAll("%PLAYER_X%", String.valueOf(location.getX()));
+                    cmd = cmd.replaceAll("%PLAYER_Y%", String.valueOf(location.getY()));
+                    cmd = cmd.replaceAll("%PLAYER_Z%", String.valueOf(location.getZ()));
                     cmd = cmd.replaceAll("%PLAYER%",player);
                     server.dispatchCommand(server.getConsoleSender(),cmd);
                 }
